@@ -1,4 +1,4 @@
-package praktikum;
+package praktikum.api;
 
 public class LoginApiTest {
 }
