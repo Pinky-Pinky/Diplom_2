@@ -1,81 +1,70 @@
 package praktikum.api;
 
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import praktikum.client.LoginClient;
+import praktikum.client.UserClient;
+import praktikum.model.LoginRequest;
+import praktikum.model.UserRequest;
+import com.github.javafaker.Faker;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
 public class LoginApiTest {
 
+    private UserClient userClient = new UserClient();
+    private LoginClient loginClient = new LoginClient();
+    private Faker faker = new Faker();
+
     private String email;
     private String password;
     private String name;
+    private String accessToken;
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site";
+        email = faker.internet().emailAddress();
+        password = faker.internet().password();
+        name = faker.name().username();
 
-        // Генерация уникального пользователя
-        String uniqueId = UUID.randomUUID().toString().substring(0, 8);
-        email = "testuser_" + uniqueId + "@yandex.ru";
-        password = "password123";
-        name = "User" + uniqueId;
-
-        // Регистрация пользователя
-        Map<String, String> userData = new HashMap<>();
-        userData.put("email", email);
-        userData.put("password", password);
-        userData.put("name", name);
-
-        given()
-                .contentType(ContentType.JSON)
-                .body(userData)
-                .when()
-                .post("/api/auth/register")
-                .then()
-                .statusCode(200)
-                .body("success", equalTo(true));
+        UserRequest user = new UserRequest(email, password, name);
+        Response createResponse = userClient.createUser(user);
+        createResponse.then().statusCode(200).body("success", equalTo(true));
+        accessToken = createResponse.path("accessToken");
+        // Извлекаем name из ответа, если он возвращается (зависит от API)
+        // Если name не возвращается, используем сгенерированный выше
     }
 
     @Test
     public void loginWithValidUser_success() {
-        Map<String, String> loginData = new HashMap<>();
-        loginData.put("email", email);
-        loginData.put("password", password);
-
-        given()
-                .contentType(ContentType.JSON)
-                .body(loginData)
-                .when()
-                .post("/api/auth/login")
-                .then()
+        LoginRequest login = new LoginRequest(email, password);
+        Response response = loginClient.login(login);
+        response.then()
                 .statusCode(200)
                 .body("success", equalTo(true))
                 .body("user.email", equalTo(email))
-                .body("user.name", equalTo(name));
+                .body("user.name", equalTo(name)); // Используем сгенерированный name
     }
 
     @Test
     public void loginWithInvalidPassword_failure() {
-        Map<String, String> loginData = new HashMap<>();
-        loginData.put("email", email);
-        loginData.put("password", "wrongPassword");
-
-        given()
-                .contentType(ContentType.JSON)
-                .body(loginData)
-                .when()
-                .post("/api/auth/login")
-                .then()
+        LoginRequest login = new LoginRequest(email, "wrongPassword");
+        Response response = loginClient.login(login);
+        response.then()
                 .statusCode(401)
                 .body("success", equalTo(false))
                 .body("message", equalTo("email or password are incorrect"));
+    }
+
+    @After
+    public void tearDown() {
+        if (accessToken != null) {
+            userClient.deleteUser(accessToken)
+                    .then()
+                    .statusCode(202)
+                    .body("success", equalTo(true));
+        }
     }
 }
