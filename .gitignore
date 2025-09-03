@@ -9,6 +9,9 @@ target/
 # IntelliJ IDEA (игнорируем всю папку .idea)
 .idea/
 
+# Allure (игнорируем всю папку .allure)
+.allure/
+
 # Другие IDE
 *.iws
 *.iml

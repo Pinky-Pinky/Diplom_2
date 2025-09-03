@@ -38,7 +38,7 @@ public class LoginApiTest {
     }
 
     @Test
-    public void loginWithValidUser_success() {
+    public void loginWithValidUserSuccess() {
         LoginRequest login = new LoginRequest(email, password);
         Response response = loginClient.login(login);
         response.then()
@@ -49,8 +49,18 @@ public class LoginApiTest {
     }
 
     @Test
-    public void loginWithInvalidPassword_failure() {
+    public void loginWithInvalidPasswordFailure() {
         LoginRequest login = new LoginRequest(email, "wrongPassword");
+        Response response = loginClient.login(login);
+        response.then()
+                .statusCode(401)
+                .body("success", equalTo(false))
+                .body("message", equalTo("email or password are incorrect"));
+    }
+
+    @Test
+    public void loginWithInvalidEmailFailure() {
+        LoginRequest login = new LoginRequest("wrong" + email, password);
         Response response = loginClient.login(login);
         response.then()
                 .statusCode(401)
