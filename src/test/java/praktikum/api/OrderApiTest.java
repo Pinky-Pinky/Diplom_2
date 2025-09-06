@@ -50,7 +50,7 @@ public class OrderApiTest {
     }
 
     @Test
-    public void createOrderWithAuthAndIngredients_success() {
+    public void createOrderWithAuthAndIngredientsSuccess() {
         OrderRequest order = new OrderRequest(VALID_INGREDIENTS);
         Response response = orderClient.createOrder(order, accessToken);
         response.then()
@@ -60,7 +60,7 @@ public class OrderApiTest {
     }
 
     @Test
-    public void createOrderWithIngredientsWithoutAuth_success() {
+    public void createOrderWithIngredientsWithoutAuthSuccess() {
         OrderRequest order = new OrderRequest(VALID_INGREDIENTS);
         Response response = orderClient.createOrderWithoutAuth(order);
         response.then()
@@ -70,7 +70,7 @@ public class OrderApiTest {
     }
 
     @Test
-    public void createOrderWithAuthButNoIngredients_fail400() {
+    public void createOrderWithAuthButNoIngredientsFail400() {
         OrderRequest order = new OrderRequest(Collections.emptyList());
         Response response = orderClient.createOrder(order, accessToken);
         response.then()
@@ -83,7 +83,7 @@ public class OrderApiTest {
     }
 
     @Test
-    public void createOrderNoIngredientsNoAuth_fail400() {
+    public void createOrderNoIngredientsNoAuthFail400() {
         OrderRequest order = new OrderRequest(Collections.emptyList());
         Response response = orderClient.createOrderWithoutAuth(order);
         response.then()
@@ -96,7 +96,7 @@ public class OrderApiTest {
     }
 
     @Test
-    public void createOrderWithInvalidIngredients_fail400or500() {
+    public void createOrderWithInvalidIngredientsFail400or500() {
         OrderRequest order = new OrderRequest(INVALID_INGREDIENTS);
         Response response = orderClient.createOrder(order, accessToken);
         response.then()
